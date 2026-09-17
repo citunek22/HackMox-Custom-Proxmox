@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackMox Control Panel</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #121214;
+            --card-bg: #1e1e22;
+            --text-main: #f0f0f2;
+            --accent: #ec3750; /* HackClub Crimson/Red */
+            --accent-hover: #d6263e;
+            --success: #22c55e;
+            --border-color: #33333a;
+
+        }
+        body {
+            background: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+        }
+        h2 {
+            color: var(--accent);
+            font-size: 26px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h2 span { color: var(--text-main); }
+        h3 { margin-bottom: 10px; font-size: 16px; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 18px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            border-top: 3px solid var(--accent);
+        }
+        .bar-bg {
+            background: #0f172a;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 8px;
+            border-top: 1px solid var(--border-color);
+        }
+        .bar-fill {
+            background: var(--accent);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        #terminal-container {
+            height: 350px;
+            background: #000;
+            padding: 5px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        .btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 5px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: var(--accent-hover); }
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 6px;
+            display: none;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .store-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .store-item:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+
+    <h2><span>Hack</span>Mox Control Panel</h2>
+
+    <!-- List of running instances -->
+    <div class="grid">
+        <div class="card">
+            <h3>CPU Usage: <span id="cpu-val" style="color: var(--accent)">0</span></h3>
+            <div class="bar-bg"><div id="cpu-bar" class="bar-fill"></div></div>
+    </div>
+    <div class="card">
+        <h3>RAM: <span id="ram-used" style="color: var(--accent)">0</span> / <span id="ram-total">0</span> GB</h3>
+        <div class="bar-bg"><div id="ram-bar" class="bar-fill"></div></div>
+    </div>
+</div>
+
+<!-- Oneclick Shop -->
+<div class="grid">
+    <div class="card">
+        <h3>Oneclick Shop(Autoinstall)</h3>
+        <div id="store-container">Loading shop...</div>
+    </div>
+</div>
+
+<!-- Terminal -->
+<div class="card">
+    <h3>Live Console: <span id="active-target-title" style="color: var(--accent)">main-node</span></h3>
+    <div id="terminal-container"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+    let activeContainerId = 'main-node';
+
+    async function updateStats() {
+        try {
+            const res = await fetch('/api/system/stats?container_id=' + activeContainerId);
+            const data = await res.json();
+            document.getElementById('cpu-val').innerText = data.cpu_percent + '%';
+            document.getElementById('cpu-bar').style.width = data.cpu_percent + '%';
+            document.getElementById('ram-used').innerText = data.ram_used_gb;
+            document.getElementById('ram-total').innerText = data.ram_total_gb;
+            document.getElementById('ram-bar').style.width = data.ram_percent + '%';
+        } catch (e) {}
+    }
+
+    async function loadContainers() {
+        try {
+            const res = await fetch('/api/containers/list')
+            const data = await res.json();
+            const listDiv = document.getElementById('containers-list');
+            listDiv.innerHTML = '';
+
+            const hostBtn = document.createElement('button');
+            hostBtn.className = 'btn';
+            hostBtn.style.background = activeContainerId === 'main-node' ? '#ec3750' : '33333a';
+            hostBtn.innerText = 'main-node (Host)';
+            hostBtn.onclick = () => switchContainer('main-node');
+            listDiv.appendChild(hostBtn);
+
+            if (data.containers) {
+                data.containers.forEach(name => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn';
+                    btn.style.background = activeContainerId === name ? '#22c55e' : '#252529';
+                    btn.style.color = '#fff';
+                    btn.innerText = '📦' + name;
+                    btn.onclick = () => switchContainer(name);
+                    listDiv.appendChild(btn);
+                });
+            }
+        } catch (e) {}
+    }
+
+    function switchContainer(id) {
+        activeContainerId = id;
+        document.getElementById('active-target-title').innerText = id;
+        showToast("Switched to: " + id);
+        updateStats();
+        loadContainers();
+        initTerminal(id);
+    }
+
+    async function loadStore() {
+        try {
+            const res = await fetch('/api/store/catalog');
+            const catalog = await res.json();
+            const container = document.getElementById('store-container');
+            container.innerHTML = '';
+
+            for (const [key, item] of Object.entries(catalog)) {
+                const div = document.createElement('div');
+                div.className = 'store-item';
+                div.innerHTML = `<strong>${item.name}</strong>
+                    <button class="btn" onclick="deployPreset('${key}')">Install</button>`;
+                container.appendChild(div);
+            }
+        } catch (e) {}
+    }
+    
+    async function deployPreset(key) {
+        showToast('Installing ' + key + '...');
+        try {
+            const res = await fetch('/api/resources/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ preset_app: key })
+            });
+            const data = await res.json();
+            showToast(data.message);
+            setTimeout(loadContainers, 1500);
+        } catch (e) { showToast("There was an error with the installation!"); }
+    }
+
+    let term, ws;
+    function initTerminal(targetId) {
+     const termContainer = document.getElementById('terminal-container');
+     termContainer.innerHTML = '';
+     if (ws) ws.close;
+     
+     term = new Terminal({ cursorBlink: true, theme: { background: '#000000', foreground: '#00ff66' } });
+     term.open(termContainer);
+     termContainer.onclick = () => term.focus();
+
+     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+     ws = new WebSocket(protocol + '//' + window.location.host + '/ws/console/' + (targetId || activeContainerId));
+
+     ws.onmessage = (e) => term.write(e.data);
+     term.onData((data) => {
+        if (ws && ws.readyState === WebSocket.OPEN) ws.send(data);
+     });
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+
+    window.onload = () => {
+        updateStats();
+        loadStore();
+        loadContainers();
+        initTerminal('main-node');
+        setInterval(updateStats, 3000);
+        setInterval(loadContainers, 5000);
+        };
+</script>
+</body>
+</html>
