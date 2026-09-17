@@ -2,6 +2,11 @@
 
 Lightweigth web control panel for my custom proxmox which works on Docker so when you press "ollama" on the website it will actally create an ollama docker container
 
+## 📋 System Requirements
+- **OS:** Linux (Debian/Ubuntu recommended) or macOS / Windows with WSL
+- **Python:** 3.9 or higher
+- **Permissions:** Root / sudo access (for container management and execution)
+
 ## Some of the features that you can see
 - **Live Terminal** It's a fully interactive terminal via WebSocket (`xterm.js`).
 - **System Monitoring** Like the name suggests it monitors your system resources like your CPU, Ram and your storage.
