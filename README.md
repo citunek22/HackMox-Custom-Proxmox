@@ -1,6 +1,7 @@
 # HackMox Control Panel
 
 Lightweigth web control panel for my custom proxmox which works on Docker so when you press "ollama" on the website it will actally create an ollama docker container
+Did i mention this took me 11 hours to make
 
 ## 📋 System Requirements
 - **OS:** Linux (Debian/Ubuntu recommended) or macOS / Windows with WSL
