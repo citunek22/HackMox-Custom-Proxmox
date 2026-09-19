@@ -15,7 +15,6 @@
             --accent-hover: #d6263e;
             --success: #22c55e;
             --border-color: #33333a;
-
         }
         body {
             background: var(--bg-dark);
@@ -76,6 +75,7 @@
             cursor: pointer;
             font-weight: bold;
             margin-right: 5px;
+            margin-top: 5px;
             transition: background 0.2s;
         }
         .btn:hover { background: var(--accent-hover); }
@@ -105,33 +105,41 @@
 
     <h2><span>Hack</span>Mox Control Panel</h2>
 
-    <!-- List of running instances -->
+    <!-- List of active containers -->
+    <div class="grid">
+        <div class="card" style="grid-column: 1 / -1;">
+            <h3>Target Node / Containers</h3>
+            <div id="containers-list">Loading nodes...</div>
+        </div>
+    </div>
+
+    <!-- Live stats -->
     <div class="grid">
         <div class="card">
             <h3>CPU Usage: <span id="cpu-val" style="color: var(--accent)">0</span></h3>
             <div class="bar-bg"><div id="cpu-bar" class="bar-fill"></div></div>
+        </div>
+        <div class="card">
+            <h3>RAM: <span id="ram-used" style="color: var(--accent)">0</span> / <span id="ram-total">0</span> GB</h3>
+            <div class="bar-bg"><div id="ram-bar" class="bar-fill"></div></div>
+        </div>
     </div>
+
+    <!-- Oneclick Shop -->
+    <div class="grid">
+        <div class="card">
+            <h3>Oneclick Shop(Autoinstall)</h3>
+            <div id="store-container">Loading shop...</div>
+        </div>
+    </div>
+
+    <!-- Terminal -->
     <div class="card">
-        <h3>RAM: <span id="ram-used" style="color: var(--accent)">0</span> / <span id="ram-total">0</span> GB</h3>
-        <div class="bar-bg"><div id="ram-bar" class="bar-fill"></div></div>
+        <h3>Live Console: <span id="active-target-title" style="color: var(--accent)">main-node</span></h3>
+        <div id="terminal-container"></div>
     </div>
-</div>
 
-<!-- Oneclick Shop -->
-<div class="grid">
-    <div class="card">
-        <h3>Oneclick Shop(Autoinstall)</h3>
-        <div id="store-container">Loading shop...</div>
-    </div>
-</div>
-
-<!-- Terminal -->
-<div class="card">
-    <h3>Live Console: <span id="active-target-title" style="color: var(--accent)">main-node</span></h3>
-    <div id="terminal-container"></div>
-</div>
-
-<div id="toast"></div>
+    <div id="toast"></div>
 
 <script>
     let activeContainerId = 'main-node';
@@ -150,14 +158,15 @@
 
     async function loadContainers() {
         try {
-            const res = await fetch('/api/containers/list')
+            const res = await fetch('/api/containers/list');
             const data = await res.json();
             const listDiv = document.getElementById('containers-list');
+            if (!listDiv) return;
             listDiv.innerHTML = '';
 
             const hostBtn = document.createElement('button');
             hostBtn.className = 'btn';
-            hostBtn.style.background = activeContainerId === 'main-node' ? '#ec3750' : '33333a';
+            hostBtn.style.background = activeContainerId === 'main-node' ? '#ec3750' : '#33333a';
             hostBtn.innerText = 'main-node (Host)';
             hostBtn.onclick = () => switchContainer('main-node');
             listDiv.appendChild(hostBtn);
@@ -168,7 +177,7 @@
                     btn.className = 'btn';
                     btn.style.background = activeContainerId === name ? '#22c55e' : '#252529';
                     btn.style.color = '#fff';
-                    btn.innerText = '📦' + name;
+                    btn.innerText = '📦 ' + name;
                     btn.onclick = () => switchContainer(name);
                     listDiv.appendChild(btn);
                 });
@@ -218,28 +227,21 @@
 
     let term, ws;
     function initTerminal(targetId) {
-     const termContainer = document.getElementById('terminal-container');
-     termContainer.innerHTML = '';
-     if (ws) ws.close;
-     
-     term = new Terminal({ cursorBlink: true, theme: { background: '#000000', foreground: '#00ff66' } });
-     term.open(termContainer);
-     termContainer.onclick = () => term.focus();
+        const termContainer = document.getElementById('terminal-container');
+        termContainer.innerHTML = '';
+        if (ws) ws.close();
+        
+        term = new Terminal({ cursorBlink: true, theme: { background: '#000000', foreground: '#00ff66' } });
+        term.open(termContainer);
+        termContainer.onclick = () => term.focus();
 
-     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-     ws = new WebSocket(protocol + '//' + window.location.host + '/ws/console/' + (targetId || activeContainerId));
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(protocol + '//' + window.location.host + '/ws/console/' + (targetId || activeContainerId));
 
-     ws.onmessage = (e) => term.write(e.data);
-     term.onData((data) => {
-        if (ws && ws.readyState === WebSocket.OPEN) ws.send(data);
-     });
-    }
-
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        t.innerText = msg;
-        t.style.display = 'block';
-        setTimeout(() => { t.style.display = 'none'; }, 3000);
+        ws.onmessage = (e) => term.write(e.data);
+        term.onData((data) => {
+            if (ws && ws.readyState === WebSocket.OPEN) ws.send(data);
+        });
     }
 
     function showToast(msg) {
@@ -256,7 +258,7 @@
         initTerminal('main-node');
         setInterval(updateStats, 3000);
         setInterval(loadContainers, 5000);
-        };
+    };
 </script>
 </body>
 </html>
