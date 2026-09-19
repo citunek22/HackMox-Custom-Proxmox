@@ -4,6 +4,7 @@ import asyncio
 import subprocess
 import pty
 import psutil
+import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -12,7 +13,7 @@ from pydantic import BaseModel
 app = FastAPI()
 
 if not os.path.exists("static"):
-    os.makedir("static")
+    os.makedirs("static")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -24,10 +25,11 @@ async def read_index():
 @app.get("/api/containers/list")
 async def list_containers():
     try:
+        # Vrátí seznam VŠECH kontejnerů v systému
         cmd = ["docker", "ps", "-a", "--format", "{{.Names}}"]
         output = subprocess.check_output(cmd).decode("utf-8").strip()
         containers = output.split("\n") if output else []
-        return {"containers": [c for c in containers if c]}
+        return {"containers": [c.strip() for c in containers if c.strip()]}
     except Exception as e:
         return {"containers": [], "error": str(e)}
 
@@ -50,7 +52,7 @@ async def get_stats(container_id: str = "main-node"):
         }
     else:
         try:
-            cmd = ["docker", "stats", container_id, "--no-stream", "--format", "{{.CPUPerc}}|{{MemUsage}}|{{.MemPerc}}"]
+            cmd = ["docker", "stats", container_id, "--no-stream", "--format", "{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}"]
             output = subprocess.check_output(cmd).decode("utf-8").strip()
             cpu_str, mem_str, mem_perc_str = output.split("|")
 
@@ -71,6 +73,7 @@ async def get_stats(container_id: str = "main-node"):
                 "disk_total_gb": round(disk.total / (1024**3), 2),
                 "disk_percent": disk.percent
             }
+
 @app.get("/api/store/catalog")
 async def get_catalog():
     return {
@@ -89,10 +92,10 @@ async def get_catalog():
             "image": "jellyfin/jellyfin:latest",
             "ports": "-p 8096:8096"
         },
-        "sunshine": {
-            "name": "Sunshine Game Streaming",
-            "image": "lscr.io/linuxserver/sunshine:latest",
-            "ports": "-p 47989>47989 -p 47990:47990 -p 48010>48010"
+        "nginx": {
+            "name": "Nginx Web Server",
+            "image": "nginx:alpine",
+            "ports": "-p 8080:80"
         }
     }
 
@@ -100,7 +103,7 @@ class ResorceRequest(BaseModel):
     preset_app: str
 
 @app.post("/api/resources/create")
-async def create_resource(req: ResourceRequest):
+async def create_resource(req: ResorceRequest):
     try:
         catalog = await get_catalog()
         if req.preset_app not in catalog:
@@ -111,10 +114,7 @@ async def create_resource(req: ResourceRequest):
         image = app_info["image"]
         ports = app_info["ports"]
 
-        # Important: Delete the old container, if there was a unsuccesful attempt
         subprocess.run(f"docker rm -f {container_name}", shell=True, stderr=subprocess.DEVNULL)
-
-        # Start a new clean official container, which will always run
         run_cmd = f"docker run -d --name {container_name} {ports} --restart unless-stopped {image}"
 
         subprocess.Popen(run_cmd, shell=True)
@@ -122,19 +122,19 @@ async def create_resource(req: ResourceRequest):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
+@app.websocket("/main-node")
 @app.websocket("/ws/console/{container_id}")
-async def websocket_endpoint(websocket: WebSocket, container_id: str):
+async def websocket_endpoint(websocket: WebSocket, container_id: str = "main-node"):
     await websocket.accept()
 
     if container_id == "main-node":
         cmd = ["/bin/bash"]
     else:
-       # Start /bin/sh or /bin/bash inside of the container
-       cmd = ["docker", "exec", "-it", container_id, "/bin/sh"]
+        cmd = ["docker", "exec", "-it", container_id, "/bin/sh"]
 
     master_fd, slave_fd = pty.openpty()
 
-    proc = await asyncio.create_subproccess_exec(
+    proc = await asyncio.create_subprocess_exec(
         *cmd,
         stdin=slave_fd,
         stdout=slave_fd,
@@ -157,9 +157,15 @@ async def websocket_endpoint(websocket: WebSocket, container_id: str):
 
     try:
         while True:
-            msg = await websocket.recieve_text()
+            msg = await websocket.receive_text()
             os.write(master_fd, msg.encode('utf-8'))
     except Exception:
         pass
-    if proc.returncode is None:
-        proc.kill()
+    finally:
+        loop.remove_reader(master_fd)
+        os.close(master_fd)
+        if proc.returncode is None:
+            proc.kill()
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
