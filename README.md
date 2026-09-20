@@ -17,10 +17,10 @@ Did i mention this took me 11 hours to make
 1. **Install Dependencies**
 ```bash 
 pip install -r requirements.txt
-
+```
 2. Run the server or website how you wanna call it
-```bash```
+```bash
 python main.py
-
+```
 3. Open it in your browser
 Go to http://localhost:8000 or https://127.0.0.1:8000
