@@ -3,6 +3,8 @@
 
 Like the name suggests it works like proxmox but not exactly like proxmox it uses docker to make the containers.
 Did i mention this took me 11 hours to make
+also here is a link to see it works 
+https://youtu.be/-h0IKcTE2pg?si=gPwrRQaUgzqlNd_Z
 
 ## System Requirements / things you absolutely need
 - **OS:** Linux (Debian/Ubuntu and mint like me recommended) or macOS / Windows with WSL
