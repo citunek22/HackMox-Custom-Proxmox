@@ -1,4 +1,5 @@
 <img width="950" height="596" alt="1000043287" src="https://github.com/user-attachments/assets/afe97458-2a32-4208-8451-0a6645a1539c" />
+
 # HackMox
 something like proxmox
 
