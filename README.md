@@ -33,7 +33,8 @@ Did i mention this took me 11 hours to make
    ```
 4. Run the app by typing hackmox in the terminal 
 ## Option C
-1. git clone [https://github.com/citunek22/hackmox.git](https://github.com/citunek22/hackmox.git)
+1. Clone this repo
+git clone [https://github.com/citunek22/hackmox.git](https://github.com/citunek22/hackmox.git)
 cd hackmox
 2. **Install Dependencies**
 ```bash 
