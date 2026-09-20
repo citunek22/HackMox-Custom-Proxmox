@@ -14,12 +14,12 @@ Did i mention this took me 11 hours to make
 - **Container Management** You can switch between your containers and your system. So you have your main node that's your PC and your containers that are like sandboxes and did you play in sandboxes as a kid
 - **One-Click Shop** It means you can install ollama, home assistant etc. by just one click. It's me approved I hope that means something.
 
-1. ** Install Dependencies**
-```bash
+1. **Install Dependencies**
+```bash 
 pip install -r requirements.txt
 
 2. Run the server or website how you wanna call it
-```bash
+```bash```
 python main.py
 
 3. Open it in your browser
