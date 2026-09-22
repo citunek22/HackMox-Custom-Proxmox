@@ -21,10 +21,9 @@ https://youtu.be/-h0IKcTE2pg?si=gPwrRQaUgzqlNd_Z
 ## Installation guide
 ### Option A: Windows (it's the easiest)
 1. Go to the releases page here on GitHub (because where else would you download the code)
-2. Download the file `hackmox-windows-exe.zip`. (don't worry that it's a zip inside the zip is the exe)
-3. So Double click on the zip and select extract all (even tho there is one file it's better that way)
-4. So now go to the extracted folder and open the exe it should be something like main.exe
-5. Open your web browser and go to `http://localhost:8000`.
+2. Download the file `hackmox-windows-exe`.
+3. So Double click on the exe
+4. Then open your web browser and go to `http://localhost:8000`.
 
 ---
 
