@@ -2,7 +2,7 @@
 
 # HackMox
 something like proxmox
-{{ wakatimeDoubleCategoryBar "Languages:" wakatimeData.Languages "Projects:" wakatimeData.Projects 5 }}
+
 
 Like the name suggests it works like proxmox but not exactly like proxmox it uses docker to make the containers.
 Did i mention this took me 11 hours to make
