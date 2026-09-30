@@ -20,15 +20,7 @@ https://youtu.be/-h0IKcTE2pg?si=gPwrRQaUgzqlNd_Z
 - **Container Management** You can switch between your containers and your system. So you have your main node that's your PC and your containers that are like sandboxes and did you play in sandboxes as a kid
 - **One-Click Shop** It means you can install ollama, home assistant etc. by just one click. It's me approved I hope that means something.
 ## Installation guide
-### Option A: Windows (it's the easiest)
-1. Go to the releases page here on GitHub (because where else would you download the code)
-2. Download the file `hackmox-windows-exe`.
-3. So Double click on the exe
-4. Then open your web browser and go to `http://localhost:8000`.
-
----
-
-### Option B: Linux (Debian/Ubuntu)
+### Option A: Linux (Debian/Ubuntu)
 1. Like in the windows option go to releases (again here on GitHub not anywhere else) and download the file named `hackmox_1.0.0_amd64.deb`.
 2. Open your terminal in the folder where you downloaded the file.
 3. Run this command to install:
@@ -36,7 +28,7 @@ https://youtu.be/-h0IKcTE2pg?si=gPwrRQaUgzqlNd_Z
    sudo dpkg -i hackmox_1.0.0_amd64.deb
    ```
 4. Run the app by typing hackmox in the terminal 
-## Option C
+## Option B
 1. Clone this repo
 git clone [https://github.com/citunek22/hackmox.git](https://github.com/citunek22/hackmox.git)
 cd hackmox
