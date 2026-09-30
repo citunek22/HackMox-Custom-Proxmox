@@ -31,14 +31,16 @@ https://youtu.be/-h0IKcTE2pg?si=gPwrRQaUgzqlNd_Z
 ## Option B
 1. Clone this repo
 git clone [https://github.com/citunek22/hackmox.git](https://github.com/citunek22/hackmox.git)
+
+2. **Go into the folder**
 cd hackmox
-2. **Install Dependencies**
+3. **Install Dependencies**
 ```bash 
 pip install -r requirements.txt
 ```
-3. Run the server or website how you wanna call it
+4. Run the server or website how you wanna call it
 ```bash
 python main.py
 ```
-4. Open it in your browser
+5. Open it in your browser
 Go to http://localhost:8000 or https://127.0.0.1:8000
