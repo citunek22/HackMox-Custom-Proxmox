@@ -21,7 +21,7 @@ https://youtu.be/-h0IKcTE2pg?si=gPwrRQaUgzqlNd_Z
 - **One-Click Shop** It means you can install ollama, home assistant etc. by just one click. It's me approved I hope that means something.
 ## Installation guide
 ### Option A: Linux (Debian/Ubuntu)
-1. Like in the windows option go to releases (again here on GitHub not anywhere else) and download the file named `hackmox_1.0.0_amd64.deb`.
+1. Go to releases (here on GitHub not anywhere else) and download the file named `hackmox_1.0.0_amd64.deb`.
 2. Open your terminal in the folder where you downloaded the file.
 3. Run this command to install:
    ```bash
