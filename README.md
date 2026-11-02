@@ -30,7 +30,7 @@ https://youtu.be/-h0IKcTE2pg?si=gPwrRQaUgzqlNd_Z
 4. Run the app by typing hackmox in the terminal 
 ## Option B
 1. **Clone this repo**
-git clone [https://github.com/citunek22/hackmox.git](https://github.com/citunek22/hackmox.git)
+git clone [https://github.com/citunek22/HackMox-Custom-Proxmox.git](https://github.com/citunek22/HackMox-Custom-Proxmox.git)
 
 2. **Go into the folder**
 ```bash
